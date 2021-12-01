@@ -1,7 +1,7 @@
 package http
 
 import (
-	"BookStore/internal/domain"
+	"github.com/Dann-Go/book-store/internal/domain"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -13,16 +13,13 @@ type BookHandler struct {
 type ResponseError struct {
 	Message string `json:"message"`
 }
-
-func (bh *BookHandler) InitRoutes(bUsecase domain.BookUsecase) *gin.Engine {
-	bh.BUsecase = bUsecase
-	router := gin.New()
-	router.GET("/books", bh.GetAll)
-	router.GET("/books/:id", bh.GetById)
-	router.POST("/books", bh.Add)
-	router.PUT("/books/:id", bh.Update)
-	router.DELETE("/books/:id", bh.Delete)
-	return router
+func (bh *BookHandler)NewBookHandler(group *gin.RouterGroup, usecase domain.BookUsecase) {
+	bh.BUsecase = usecase
+	group.GET("", bh.GetAll)
+	group.GET("/:id", bh.GetById)
+	group.POST("", bh.Add)
+	group.PUT("/:id", bh.Update)
+	group.DELETE("/:id", bh.Delete)
 }
 
 func (bh *BookHandler) Add(ctx *gin.Context) {

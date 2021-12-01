@@ -1,7 +1,7 @@
-package repository
+package postegres
 
 import (
-	"BookStore/internal/domain"
+	"github.com/Dann-Go/book-store/internal/domain"
 	"log"
 )
 
@@ -63,6 +63,7 @@ func (p postgresqlRepository) Update(book *domain.Book, id int) error {
 		}
 		log.Println("No such book was found. New book was added")
 		books = append(books, *book)
+		break
 	}
 	return nil
 }

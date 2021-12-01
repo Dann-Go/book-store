@@ -1,7 +1,7 @@
 package usecase
 
 import (
-	"BookStore/internal/domain"
+	"github.com/Dann-Go/book-store/internal/domain"
 	"log"
 	"time"
 )
