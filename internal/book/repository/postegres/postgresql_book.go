@@ -2,68 +2,59 @@ package postegres
 
 import (
 	"github.com/Dann-Go/book-store/internal/domain"
-	"log"
+	"github.com/jmoiron/sqlx"
+	_"log"
 )
 
-var books = []domain.Book{{
-	ID:      1,
-	Title:   "Богатый папа, Бедный папа",
-	Authors: []string{"Роберт Киосаки"},
-	Year:    "1997",
-},  {ID: 2,
-	Title:   "Преступление и наказание",
-	Authors: []string{"Фёдор Достоевский"},
-	Year:    "1866"},
-	{
-	ID:      3,
-	Title:   "Метро 2033",
-	Authors: []string{"Дмитрий Глуховский"},
-	Year:    "2002"}}
-
 type postgresqlRepository struct {
-	//db Connection
+	Conn *sqlx.DB
 }
 
-func NewPostgresqlRepository() domain.BookRepository {
-	return &postgresqlRepository{}
+func NewPostgresqlRepository(Conn *sqlx.DB) domain.BookRepository {
+	return &postgresqlRepository{Conn}
 }
 func (p postgresqlRepository) Add(book *domain.Book) error {
-	books = append(books, *book)
+	query := `INSERT INTO books(id, title, authors, year) VALUES ($1, $2, $3, $4);`
+	_, err := p.Conn.Exec(query, book.ID, book.Title, book.Authors, book.Year)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
 func (p postgresqlRepository) GetAll() ([]domain.Book, error) {
+	books :=  []domain.Book{}
+	err := p.Conn.Select(&books, "SELECT * FROM books")
+	if err != nil {
+		return nil, err
+	}
 	return books, nil
 }
 
 func (p postgresqlRepository) GetById(id int) (*domain.Book, error) {
-	for i := range books {
-		if books[i].ID == id {
-			return &books[i], nil
-		}
+	book := domain.Book{}
+	err := p.Conn.Get(&book, "SELECT * FROM books where id=$1", id)
+	if err != nil {
+		return nil, err
 	}
-	return nil, nil
+	return &book, nil
 }
 
 func (p postgresqlRepository) Delete(id int) error {
-	for i := range books {
-		if books[i].ID == id {
-			books = append(books[:i], books[i+1:]...)
-			break
-		}
+	query := `Delete from books where id = $1;`
+	_, err := p.Conn.Exec(query, id)
+	if err != nil {
+		return err
 	}
 	return nil
 }
 
 func (p postgresqlRepository) Update(book *domain.Book, id int) error {
-	for i := range books {
-		if books[i].ID == id {
-			books[i] = *book
-			break
-		}
-		log.Println("No such book was found. New book was added")
-		books = append(books, *book)
-		break
+	query := `UPDATE books set id = $2, title = $3, authors =$4, year = $5 where id = $1;`
+	_, err := p.Conn.Exec(query, id, book.ID, book.Title, book.Authors, book.Year)
+	if err != nil {
+		return err
 	}
 	return nil
 }

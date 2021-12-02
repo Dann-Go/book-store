@@ -23,11 +23,11 @@ func (bh *BookHandler)NewBookHandler(group *gin.RouterGroup, usecase domain.Book
 }
 
 func (bh *BookHandler) Add(ctx *gin.Context) {
-	result := bh.BUsecase.Add(&domain.Book{
-		ID: 4,
-		Title: "Мы",
-		Authors: []string{"Евгений Замятин"},
-		Year:    "1924"})
+	json := domain.Book{}
+	if err := ctx.ShouldBindJSON(&json);err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	result := bh.BUsecase.Add(&json)
 
 	ctx.JSON(http.StatusOK,result)
 }
@@ -47,15 +47,13 @@ func (bh *BookHandler) GetById(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 func (bh *BookHandler) Update(ctx *gin.Context) {
-	result := bh.BUsecase.Update(&domain.Book{
-		ID: 4,
-		Title: "Мы",
-		Authors: []string{"Евгений Замятин"},
-		Year:    "1924"}, 1)
-
+	id, _:= strconv.Atoi(ctx.Request.URL.Query().Get("id"))
+	json := domain.Book{}
+	if err := ctx.ShouldBindJSON(&json);err != nil {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	}
+	result := bh.BUsecase.Update(&json,id)
 	ctx.JSON(http.StatusOK,result)
-
-
 }
 func (bh *BookHandler) Delete(ctx *gin.Context) {
 	id, _:= strconv.Atoi(ctx.Request.URL.Query().Get("id"))

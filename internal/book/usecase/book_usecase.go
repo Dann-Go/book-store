@@ -2,7 +2,6 @@ package usecase
 
 import (
 	"github.com/Dann-Go/book-store/internal/domain"
-	"log"
 	"time"
 )
 
@@ -19,43 +18,21 @@ func NewBookUsecase(bRepo domain.BookRepository, timeout time.Duration) domain.B
 }
 
 func (b bookUsecase) Add(book *domain.Book) error {
-	err := b.bookRepo.Add(book)
-	if err != nil {
-		return err
-	}
-	return nil
+	return b.bookRepo.Add(book)
 }
 
 func (b bookUsecase) GetAll() ([]domain.Book, error) {
-	result, err := b.bookRepo.GetAll()
-	if err != nil {
-		log.Println("No books where returned")
-		return nil, err
-	}
-	return result, err
+	return b.bookRepo.GetAll()
 }
 
 func (b bookUsecase) GetById(id int) (*domain.Book, error) {
-	result, err := b.bookRepo.GetById(id)
-	if err != nil {
-		log.Println("No such book was found")
-		return nil, err
-	}
-	return result, err
+	return b.bookRepo.GetById(id)
 }
 
 func (b bookUsecase) Delete(id int) error {
-	err := b.bookRepo.Delete(id)
-	if err != nil {
-		return err
-	}
-	return nil
+	return b.bookRepo.Delete(id)
 }
 
 func (b bookUsecase) Update(book *domain.Book, id int) error {
-	err := b.bookRepo.Update(book, id)
-	if err != nil {
-		return err
-	}
-	return nil
+	return b.bookRepo.Update(book, id)
 }

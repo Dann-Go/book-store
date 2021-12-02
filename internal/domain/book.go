@@ -1,11 +1,13 @@
 package domain
 
+import "github.com/lib/pq"
+
 //Book ...
 type Book struct {
-	ID      int      `json:"id"`
-	Title   string   `json:"title"`
-	Authors []string `json:"authors"`
-	Year    string   `json:"year"`
+	ID      int      `db:"id" json:"id"`
+	Title   string   `db:"title" json:"title"`
+	Authors pq.StringArray `db:"authors"  json:"authors"`
+	Year    string   `db:"year" json:"year"`
 }
 
 // BookUsecase represent the book's usecase
