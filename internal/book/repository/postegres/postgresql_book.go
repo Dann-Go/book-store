@@ -3,7 +3,7 @@ package postegres
 import (
 	"github.com/Dann-Go/book-store/internal/domain"
 	"github.com/jmoiron/sqlx"
-	_"log"
+	_ "log"
 )
 
 type postgresqlRepository struct {
@@ -24,7 +24,7 @@ func (p postgresqlRepository) Add(book *domain.Book) error {
 }
 
 func (p postgresqlRepository) GetAll() ([]domain.Book, error) {
-	books :=  []domain.Book{}
+	books := []domain.Book{}
 	err := p.Conn.Select(&books, "SELECT * FROM books")
 	if err != nil {
 		return nil, err
@@ -42,7 +42,7 @@ func (p postgresqlRepository) GetById(id int) (*domain.Book, error) {
 }
 
 func (p postgresqlRepository) Delete(id int) error {
-	query := `Delete from books where id = $1;`
+	query := `DELETE from books where id = $1;`
 	_, err := p.Conn.Exec(query, id)
 	if err != nil {
 		return err
