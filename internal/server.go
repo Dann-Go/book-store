@@ -5,11 +5,13 @@ import (
 	delivery "github.com/Dann-Go/book-store/internal/book/delivery/http"
 	"github.com/Dann-Go/book-store/internal/book/repository/postegres"
 	"github.com/Dann-Go/book-store/internal/book/usecase"
+	"github.com/Dann-Go/book-store/pkg/middleware"
 	"github.com/braintree/manners"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -50,7 +52,17 @@ func Inject() *gin.Engine {
 		log.Fatalf(err.Error())
 	}
 
-	router := gin.Default()
+	query, err := ioutil.ReadFile("migration.sql")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	if _, err := db.Exec(string(query)); err != nil {
+		log.Fatal(err.Error())
+	}
+
+	router := gin.New()
+	gin.SetMode(gin.ReleaseMode)
+	router.Use(middleware.Logger())
 	bookRepo := postegres.NewPostgresqlRepository(db)
 	bookUsecase := usecase.NewBookUsecase(bookRepo, 30)
 	v := validator.New()

@@ -8,6 +8,7 @@ require (
 	github.com/go-playground/validator/v10 v10.9.0
 	github.com/jmoiron/sqlx v1.3.4
 	github.com/lib/pq v1.10.4
+	github.com/sirupsen/logrus v1.8.1
 )
 
 require (
