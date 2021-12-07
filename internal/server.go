@@ -3,7 +3,7 @@ package internal
 import (
 	"fmt"
 	delivery "github.com/Dann-Go/book-store/internal/book/delivery/http"
-	"github.com/Dann-Go/book-store/internal/book/repository/postegres"
+	"github.com/Dann-Go/book-store/internal/book/repository/postgres"
 	"github.com/Dann-Go/book-store/internal/book/usecase"
 	"github.com/Dann-Go/book-store/pkg/middleware"
 	"github.com/braintree/manners"
@@ -11,8 +11,8 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
 	"time"
@@ -29,6 +29,13 @@ type DbConfig struct {
 	Password string
 	DBName   string
 	SSLMode  string
+}
+
+func initLogger() {
+	logger := log.New()
+	logger.Out = os.Stdout
+	log.SetLevel(log.DebugLevel)
+	log.SetFormatter(&log.JSONFormatter{})
 }
 
 func Inject() *gin.Engine {
@@ -52,7 +59,7 @@ func Inject() *gin.Engine {
 		log.Fatalf(err.Error())
 	}
 
-	query, err := ioutil.ReadFile("migration.sql")
+	query, err := ioutil.ReadFile("internal\\book\\repository\\postgres\\migrations\\migration.sql")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -60,10 +67,10 @@ func Inject() *gin.Engine {
 		log.Fatal(err.Error())
 	}
 
-	router := gin.New()
 	gin.SetMode(gin.ReleaseMode)
+	router := gin.New()
 	router.Use(middleware.Logger())
-	bookRepo := postegres.NewPostgresqlRepository(db)
+	bookRepo := postgres.NewPostgresqlRepository(db)
 	bookUsecase := usecase.NewBookUsecase(bookRepo, 30)
 	v := validator.New()
 
@@ -72,8 +79,8 @@ func Inject() *gin.Engine {
 
 }
 func (s *Server) Run(port string) error {
+	initLogger()
 	router := Inject()
-
 	s.server = manners.NewWithServer(&http.Server{
 		Addr:           ":" + port,
 		Handler:        router,

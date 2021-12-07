@@ -1,4 +1,4 @@
-package postegres
+package postgres
 
 import (
 	"github.com/Dann-Go/book-store/internal/domain"
