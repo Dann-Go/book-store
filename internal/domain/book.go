@@ -2,7 +2,6 @@ package domain
 
 import (
 	"github.com/lib/pq"
-	"time"
 )
 
 //Book ...
@@ -10,7 +9,7 @@ type Book struct {
 	ID      int            `db:"id" json:"id" validate:"required"`
 	Title   string         `db:"title" json:"title" validate:"required,gte=1"`
 	Authors pq.StringArray `db:"authors"  json:"authors" validate:"required,gte=1"`
-	Year    time.Time      `db:"year" json:"year" validate:"required"`
+	Year    string         `db:"year" json:"year" validate:"required,datetime=2006-01-02"`
 }
 
 // BookUsecase represent the book's usecase
