@@ -63,6 +63,7 @@ func Inject() *gin.Engine {
 	router := gin.New()
 	gin.SetMode(gin.ReleaseMode)
 	router.Use(middleware.Logger())
+	router.Use(middleware.CORS())
 	bookRepo := postegres.NewPostgresqlRepository(db)
 	bookUsecase := usecase.NewBookUsecase(bookRepo, 30)
 	v := validator.New()
