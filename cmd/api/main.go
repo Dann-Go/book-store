@@ -6,10 +6,11 @@ import (
 	"os"
 )
 
-func main()  {
+func main() {
 
 	server := new(internal.Server)
-	if err := server.Run(os.Getenv("servport")); err != nil {
+	if err := server.Run(os.Getenv("Servport")); err != nil {
 		log.Fatalf("error while running server %s", err.Error())
 	}
+
 }

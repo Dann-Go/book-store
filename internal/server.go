@@ -1,14 +1,17 @@
 package internal
 
 import (
-	"context"
 	"fmt"
 	delivery "github.com/Dann-Go/book-store/internal/book/delivery/http"
 	"github.com/Dann-Go/book-store/internal/book/repository/postegres"
 	"github.com/Dann-Go/book-store/internal/book/usecase"
+	"github.com/Dann-Go/book-store/pkg/middleware"
+	"github.com/braintree/manners"
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
@@ -16,26 +19,26 @@ import (
 )
 
 type Server struct {
-	server *http.Server
+	server *manners.GracefulServer
 }
 
 type DbConfig struct {
-	Host string
-	Port string
+	Host     string
+	Port     string
 	Username string
 	Password string
-	DBName string
-	SSLMode string
+	DBName   string
+	SSLMode  string
 }
 
-func Inject() *gin.Engine  {
+func Inject() *gin.Engine {
 	cfg := DbConfig{
-		Host: os.Getenv("host"),
-		Port: os.Getenv("dbport"),
-		Username: os.Getenv("username"),
-		Password: os.Getenv("password"),
-		DBName: os.Getenv("dbname"),
-		SSLMode: os.Getenv("sslmode"),
+		Host:     os.Getenv("Host"),
+		Port:     os.Getenv("DBport"),
+		Username: os.Getenv("Username"),
+		Password: os.Getenv("Password"),
+		DBName:   os.Getenv("DBname"),
+		SSLMode:  os.Getenv("SSLmode"),
 	}
 	connection := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.Username, cfg.DBName, cfg.Password, cfg.SSLMode)
@@ -49,28 +52,41 @@ func Inject() *gin.Engine  {
 		log.Fatalf(err.Error())
 	}
 
+	query, err := ioutil.ReadFile("migration.sql")
+	if err != nil {
+		log.Fatal(err.Error())
+	}
+	if _, err := db.Exec(string(query)); err != nil {
+		log.Fatal(err.Error())
+	}
 
-	router := gin.Default()
+	router := gin.New()
+	gin.SetMode(gin.ReleaseMode)
+	router.Use(middleware.Logger())
 	bookRepo := postegres.NewPostgresqlRepository(db)
-	bookUsecase := usecase.NewBookUsecase(bookRepo ,30)
-	new(delivery.BookHandler).NewBookHandler(router.RouterGroup.Group("/books"), bookUsecase)
+	bookUsecase := usecase.NewBookUsecase(bookRepo, 30)
+	v := validator.New()
+
+	new(delivery.BookHandler).NewBookHandler(router.RouterGroup.Group("/books"), bookUsecase, v)
 	return router
 
 }
-func (s *Server) Run (port string) error {
+func (s *Server) Run(port string) error {
 	router := Inject()
 
-	s.server = &http.Server{
-		Addr: ":" + port,
-		Handler: router,
+	s.server = manners.NewWithServer(&http.Server{
+		Addr:           ":" + port,
+		Handler:        router,
 		MaxHeaderBytes: 1 << 20,
-		ReadTimeout: 30 * time.Second,
-		WriteTimeout: 30 * time.Second,
-	}
+		ReadTimeout:    30 * time.Second,
+		WriteTimeout:   30 * time.Second,
+	})
 	log.Println("Server is running")
 	return s.server.ListenAndServe()
 }
 
-func (s *Server) Shutdown (ctx context.Context) error{
-	return s.server.Shutdown(ctx)
+func (s *Server) Shutdown() {
+	log.Println("Shutting down")
+
+	s.server.Close()
 }
