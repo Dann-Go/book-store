@@ -98,7 +98,18 @@ func Inject() *gin.Engine {
 		log.Fatal(err.Error())
 	}
 
-	gin.SetMode(gin.ReleaseMode)
+	if os.Getenv("MODE") == "debug" {
+		gin.SetMode(gin.DebugMode)
+		query, err := ioutil.ReadFile("internal\\book\\repository\\postgres\\migrations\\seeds.sql")
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		if _, err := db.Exec(string(query)); err != nil {
+			log.Fatal(err.Error())
+		}
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	router := gin.New()
 	router.Use(middleware.Logger())
 	router.Use(middleware.CORS())
