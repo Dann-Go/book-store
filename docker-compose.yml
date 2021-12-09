@@ -1,0 +1,19 @@
+services:
+  db:
+    image: postgres:latest
+    restart: always
+    environment:
+      POSTGRES_PASSWORD: "${PASSWORD}"
+      POSTGRES_USER: "${USERNAME}"
+      POSTGRES_DB: "${DBNAME}"
+    ports:
+      - "5432:5432"
+  web-app:
+    build:
+      dockerfile: Dockerfile
+    env_file:
+      - local.env
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db

@@ -90,7 +90,7 @@ func Inject() *gin.Engine {
 		log.Fatalf(err.Error())
 	}
 
-	query, err := ioutil.ReadFile("internal\\book\\repository\\postgres\\migrations\\migration.sql")
+	query, err := ioutil.ReadFile("internal/book/repository/postgres/migrations/migration.sql")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -100,7 +100,7 @@ func Inject() *gin.Engine {
 
 	if os.Getenv("MODE") == "debug" {
 		gin.SetMode(gin.DebugMode)
-		query, err := ioutil.ReadFile("internal\\book\\repository\\postgres\\migrations\\seeds.sql")
+		query, err := ioutil.ReadFile("internal/book/repository/postgres/migrations/seeds.sql")
 		if err != nil {
 			log.Fatal(err.Error())
 		}
