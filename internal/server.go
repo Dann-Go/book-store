@@ -15,6 +15,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -39,33 +40,17 @@ func initLogger() {
 }
 
 func envsCheck() {
-	_, present := os.LookupEnv("HOST")
-	if present == false {
-		log.Fatal("Environment isn't set")
+	requiredEnvs := []string{"HOST", "DBPORT", "USERNAME", "PASSWORD",
+		"DBNAME", "SSLMODE", "SERVPORT", "MODE"}
+	var msg []string
+	for _, el := range requiredEnvs {
+		val, exists := os.LookupEnv(el)
+		if !exists || len(val) == 0 {
+			msg = append(msg, el)
+		}
 	}
-	_, present = os.LookupEnv("DBPORT")
-	if present == false {
-		log.Fatal("Environment isn't set")
-	}
-	_, present = os.LookupEnv("USERNAME")
-	if present == false {
-		log.Fatal("Environment isn't set")
-	}
-	_, present = os.LookupEnv("PASSWORD")
-	if present == false {
-		log.Fatal("Environment isn't set")
-	}
-	_, present = os.LookupEnv("DBNAME")
-	if present == false {
-		log.Fatal("Environment isn't set")
-	}
-	_, present = os.LookupEnv("SSLMODE")
-	if present == false {
-		log.Fatal("Environment isn't set")
-	}
-	_, present = os.LookupEnv("SERVPORT")
-	if present == false {
-		log.Fatal("Environment isn't set")
+	if len(msg) > 0 {
+		log.Fatal(strings.Join(msg, ", "), " env(s) not set")
 	}
 }
 

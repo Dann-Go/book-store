@@ -30,21 +30,21 @@ func (bh *BookHandler) NewBookHandler(group *gin.RouterGroup, usecase domain.Boo
 func (bh *BookHandler) Add(ctx *gin.Context) {
 	json := domain.Book{}
 	if err := ctx.ShouldBindJSON(&json); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"response": responses.NewServerBadRequestError(err.Error())})
+		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
 	}
 	err := bh.valid.Struct(json)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"response": responses.NewServerBadRequestError(err.Error())})
+		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
 	}
 	_ = bh.BUsecase.Add(&json)
-	ctx.JSON(http.StatusOK, gin.H{"response": responses.NewServerGoodResponse("Books was added")})
+	ctx.JSON(http.StatusOK, responses.NewServerGoodResponse("Books was added"))
 }
 func (bh *BookHandler) GetAll(ctx *gin.Context) {
 	result, err := bh.BUsecase.GetAll()
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"response": responses.NewServerInternalError(err.Error())})
+		ctx.JSON(http.StatusInternalServerError, responses.NewServerInternalError(err.Error()))
 		return
 	}
 	ctx.JSON(http.StatusOK, result)
@@ -52,12 +52,12 @@ func (bh *BookHandler) GetAll(ctx *gin.Context) {
 func (bh *BookHandler) GetById(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Request.URL.Query().Get("id"))
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"response": responses.NewServerBadRequestError(err.Error())})
+		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
 	}
 	result, err := bh.BUsecase.GetById(id)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"response": responses.NewServerBadRequestError(err.Error())})
+		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
 	}
 	ctx.JSON(http.StatusOK, result)
@@ -65,32 +65,32 @@ func (bh *BookHandler) GetById(ctx *gin.Context) {
 func (bh *BookHandler) Update(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Request.URL.Query().Get("id"))
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"response": responses.NewServerBadRequestError(err.Error())})
+		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
 	}
 	json := domain.Book{}
 	if err := ctx.ShouldBindJSON(&json); err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"response": responses.NewServerBadRequestError(err.Error())})
+		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
 	}
 	err = bh.valid.Struct(json)
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"response": responses.NewServerBadRequestError(err.Error())})
+		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
 	}
 	_ = bh.BUsecase.Update(&json, id)
-	ctx.JSON(http.StatusOK, gin.H{"response": responses.NewServerGoodResponse("Books was updated")})
+	ctx.JSON(http.StatusOK, responses.NewServerGoodResponse("Books was updated"))
 }
 func (bh *BookHandler) Delete(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Request.URL.Query().Get("id"))
 	if err != nil {
-		ctx.JSON(http.StatusBadRequest, gin.H{"response": responses.NewServerBadRequestError(err.Error())})
+		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
 	}
 	err = bh.BUsecase.Delete(id)
 	if err != nil {
-		ctx.JSON(http.StatusInternalServerError, gin.H{"response": responses.NewServerInternalError(err.Error())})
+		ctx.JSON(http.StatusInternalServerError, responses.NewServerInternalError(err.Error()))
 		return
 	}
-	ctx.JSON(http.StatusOK, gin.H{"response": responses.NewServerGoodResponse("Books was deleted")})
+	ctx.JSON(http.StatusOK, responses.NewServerGoodResponse("Books was deleted"))
 }
