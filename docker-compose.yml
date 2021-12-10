@@ -1,3 +1,4 @@
+version: '3.8'
 services:
   db:
     image: postgres:latest
@@ -7,13 +8,14 @@ services:
       POSTGRES_USER: "${USERNAME}"
       POSTGRES_DB: "${DBNAME}"
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
   web-app:
+    restart: on-failure
     build:
       dockerfile: Dockerfile
     env_file:
       - local.env
     ports:
-      - "8000:8000"
+      - "127.0.0.1:8000:8000"
     depends_on:
       - db

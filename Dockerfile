@@ -6,9 +6,8 @@ ADD . ./
 RUN go mod download
 RUN go build -o /app/book-store ./cmd/api
 
-EXPOSE 8000
 
-FROM alpine
+FROM alpine:latest
 RUN addgroup -g 1000 app
 RUN adduser -u 1000 -G app -h /home/goapp -D goapp
 USER goapp
