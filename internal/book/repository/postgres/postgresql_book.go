@@ -1,4 +1,4 @@
-package postegres
+package postgres
 
 import (
 	"github.com/Dann-Go/book-store/internal/domain"
@@ -14,8 +14,8 @@ func NewPostgresqlRepository(Conn *sqlx.DB) domain.BookRepository {
 	return &postgresqlRepository{Conn}
 }
 func (p postgresqlRepository) Add(book *domain.Book) error {
-	query := `INSERT INTO books(id, title, authors, year) VALUES ($1, $2, $3, $4);`
-	_, err := p.Conn.Exec(query, book.ID, book.Title, book.Authors, book.Year)
+	query := `INSERT INTO books(title, authors, year) VALUES ($1, $2, $3);`
+	_, err := p.Conn.Exec(query, book.Title, book.Authors, book.Year)
 	if err != nil {
 		return err
 	}

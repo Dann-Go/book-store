@@ -3,7 +3,7 @@ package internal
 import (
 	"fmt"
 	delivery "github.com/Dann-Go/book-store/internal/book/delivery/http"
-	"github.com/Dann-Go/book-store/internal/book/repository/postegres"
+	"github.com/Dann-Go/book-store/internal/book/repository/postgres"
 	"github.com/Dann-Go/book-store/internal/book/usecase"
 	"github.com/Dann-Go/book-store/pkg/middleware"
 	"github.com/braintree/manners"
@@ -11,10 +11,11 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	log "github.com/sirupsen/logrus"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -31,14 +32,36 @@ type DbConfig struct {
 	SSLMode  string
 }
 
+func initLogger() {
+	logger := log.New()
+	logger.Out = os.Stdout
+	log.SetLevel(log.DebugLevel)
+	log.SetFormatter(&log.JSONFormatter{})
+}
+
+func envsCheck() {
+	requiredEnvs := []string{"HOST", "DBPORT", "USERNAME", "PASSWORD",
+		"DBNAME", "SSLMODE", "SERVPORT", "MODE"}
+	var msg []string
+	for _, el := range requiredEnvs {
+		val, exists := os.LookupEnv(el)
+		if !exists || len(val) == 0 {
+			msg = append(msg, el)
+		}
+	}
+	if len(msg) > 0 {
+		log.Fatal(strings.Join(msg, ", "), " env(s) not set")
+	}
+}
+
 func Inject() *gin.Engine {
 	cfg := DbConfig{
-		Host:     os.Getenv("Host"),
-		Port:     os.Getenv("DBport"),
-		Username: os.Getenv("Username"),
-		Password: os.Getenv("Password"),
-		DBName:   os.Getenv("DBname"),
-		SSLMode:  os.Getenv("SSLmode"),
+		Host:     os.Getenv("HOST"),
+		Port:     os.Getenv("DBPORT"),
+		Username: os.Getenv("USERNAME"),
+		Password: os.Getenv("PASSWORD"),
+		DBName:   os.Getenv("DBNAME"),
+		SSLMode:  os.Getenv("SSLMODE"),
 	}
 	connection := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s sslmode=%s",
 		cfg.Host, cfg.Port, cfg.Username, cfg.DBName, cfg.Password, cfg.SSLMode)
@@ -52,7 +75,7 @@ func Inject() *gin.Engine {
 		log.Fatalf(err.Error())
 	}
 
-	query, err := ioutil.ReadFile("migration.sql")
+	query, err := ioutil.ReadFile("internal/book/repository/postgres/migrations/migration.sql")
 	if err != nil {
 		log.Fatal(err.Error())
 	}
@@ -60,10 +83,22 @@ func Inject() *gin.Engine {
 		log.Fatal(err.Error())
 	}
 
+	if os.Getenv("MODE") == "debug" {
+		gin.SetMode(gin.DebugMode)
+		query, err := ioutil.ReadFile("internal/book/repository/postgres/migrations/seeds.sql")
+		if err != nil {
+			log.Fatal(err.Error())
+		}
+		if _, err := db.Exec(string(query)); err != nil {
+			log.Fatal(err.Error())
+		}
+	} else {
+		gin.SetMode(gin.ReleaseMode)
+	}
 	router := gin.New()
-	gin.SetMode(gin.ReleaseMode)
 	router.Use(middleware.Logger())
-	bookRepo := postegres.NewPostgresqlRepository(db)
+	router.Use(middleware.CORS())
+	bookRepo := postgres.NewPostgresqlRepository(db)
 	bookUsecase := usecase.NewBookUsecase(bookRepo, 30)
 	v := validator.New()
 
@@ -72,8 +107,9 @@ func Inject() *gin.Engine {
 
 }
 func (s *Server) Run(port string) error {
+	initLogger()
+	envsCheck()
 	router := Inject()
-
 	s.server = manners.NewWithServer(&http.Server{
 		Addr:           ":" + port,
 		Handler:        router,
