@@ -10,10 +10,9 @@ type bookUsecase struct {
 	ctxTimeout time.Duration
 }
 
-func NewBookUsecase(bRepo domain.BookRepository, timeout time.Duration) domain.BookUsecase {
+func NewBookUsecase(bRepo domain.BookRepository) domain.BookUsecase {
 	return bookUsecase{
-		bookRepo:   bRepo,
-		ctxTimeout: timeout,
+		bookRepo: bRepo,
 	}
 }
 
