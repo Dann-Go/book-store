@@ -99,7 +99,7 @@ func Inject() *gin.Engine {
 	router.Use(middleware.Logger())
 	router.Use(middleware.CORS())
 	bookRepo := postgres.NewPostgresqlRepository(db)
-	bookUsecase := usecase.NewBookUsecase(bookRepo, 30)
+	bookUsecase := usecase.NewBookUsecase(bookRepo)
 	v := validator.New()
 
 	new(delivery.BookHandler).NewBookHandler(router.RouterGroup.Group("/books"), bookUsecase, v)

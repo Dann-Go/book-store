@@ -12,7 +12,8 @@ RUN addgroup -g 1000 app
 RUN adduser -u 1000 -G app -h /home/goapp -D goapp
 USER goapp
 WORKDIR /app
-COPY --from=builder /app/  /app/
+COPY --from=builder /app/book-store  /app/
+COPY --from=builder /app/internal/book/repository/postgres/migrations  /app/internal/book/repository/postgres/migrations/
 
 CMD ["./book-store"]
 #CMD ["sh", "-c", "tail -f /dev/null"]
