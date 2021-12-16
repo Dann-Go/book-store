@@ -98,7 +98,7 @@ func TestBookUsecase_Update(t *testing.T) {
 		Year:    "2000-10-10",
 	}
 	t.Run("success", func(t *testing.T) {
-		mockBookRepo.On("Update", &mockBook, mock.AnythingOfTypeArgument("int")).Return(nil).Once()
+		mockBookRepo.On("Update", mock.AnythingOfType("*domain.Book"), mock.AnythingOfTypeArgument("int")).Return(nil).Once()
 
 		ucase := NewBookUsecase(mockBookRepo)
 		err := ucase.Update(&mockBook, mockBook.ID)
