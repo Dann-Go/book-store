@@ -9,11 +9,11 @@
 
 ### 08-12-2021
 
-Logging middleware was added
-Field validation was added
+- Logging middleware was added
+- Field validation was added
 
 
 ### 03-12-2021
 
-Main server logic was added 
-Db connection was added
+- Main server logic was added 
+- Db connection was added
