@@ -8,9 +8,9 @@ import (
 	"github.com/Dann-Go/book-store/pkg/middleware"
 	"github.com/braintree/manners"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
+	"github.com/penglongli/gin-metrics/ginmetrics"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -37,6 +37,15 @@ func initLogger() {
 	logger.Out = os.Stdout
 	log.SetLevel(log.DebugLevel)
 	log.SetFormatter(&log.JSONFormatter{})
+}
+
+func initMetrics(router *gin.Engine) {
+	m := ginmetrics.GetMonitor()
+	m.SetSlowTime(10)
+	m.SetMetricPath("/metrics")
+	m.SetDuration([]float64{0.1, 0.25, 0.5, 1, 2, 5, 10})
+
+	m.Use(router)
 }
 
 func envsCheck() {
@@ -100,9 +109,9 @@ func Inject() *gin.Engine {
 	router.Use(middleware.CORS())
 	bookRepo := postgres.NewPostgresqlRepository(db)
 	bookUsecase := usecase.NewBookUsecase(bookRepo)
-	v := validator.New()
 
-	new(delivery.BookHandler).NewBookHandler(router.RouterGroup.Group("/books"), bookUsecase, v)
+	new(delivery.BookHandler).NewBookHandler(router.RouterGroup.Group("/books"), bookUsecase)
+
 	return router
 
 }
@@ -110,6 +119,7 @@ func (s *Server) Run(port string) error {
 	initLogger()
 	envsCheck()
 	router := Inject()
+	initMetrics(router)
 	s.server = manners.NewWithServer(&http.Server{
 		Addr:           ":" + port,
 		Handler:        router,
