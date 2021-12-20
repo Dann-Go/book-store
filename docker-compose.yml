@@ -1,5 +1,21 @@
 version: '3.8'
+
 services:
+
+  prometheus:
+    image: prom/prometheus:latest
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/etc/prometheus/console_libraries'
+      - '--web.console.templates=/etc/prometheus/consoles'
+      - '--web.enable-lifecycle'
+    ports:
+      - "127.0.0.1:9090:9090"
+    depends_on:
+      - web-app
   db:
     image: postgres:latest
     restart: always
@@ -19,3 +35,10 @@ services:
       - "127.0.0.1:8000:8000"
     depends_on:
       - db
+
+  grafana:
+    image: grafana/grafana:latest
+    ports:
+      - "127.0.0.1:3000:3000"
+    depends_on:
+      - prometheus

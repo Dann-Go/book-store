@@ -4,22 +4,19 @@ import (
 	"github.com/Dann-Go/book-store/internal/domain"
 	"github.com/Dann-Go/book-store/internal/domain/responses"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"net/http"
 	"strconv"
 )
 
 type BookHandler struct {
 	BUsecase domain.BookUsecase
-	valid    validator.Validate
 }
 type ResponseError struct {
 	Message string `json:"message"`
 }
 
-func (bh *BookHandler) NewBookHandler(group *gin.RouterGroup, usecase domain.BookUsecase, validator *validator.Validate) {
+func (bh *BookHandler) NewBookHandler(group *gin.RouterGroup, usecase domain.BookUsecase) {
 	bh.BUsecase = usecase
-	bh.valid = *validator
 	group.GET("", bh.GetAll)
 	group.GET("/:id", bh.GetById)
 	group.POST("", bh.Add)
@@ -30,11 +27,6 @@ func (bh *BookHandler) NewBookHandler(group *gin.RouterGroup, usecase domain.Boo
 func (bh *BookHandler) Add(ctx *gin.Context) {
 	json := domain.Book{}
 	if err := ctx.ShouldBindJSON(&json); err != nil {
-		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
-		return
-	}
-	err := bh.valid.Struct(json)
-	if err != nil {
 		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
 	}
@@ -70,11 +62,6 @@ func (bh *BookHandler) Update(ctx *gin.Context) {
 	}
 	json := domain.Book{}
 	if err := ctx.ShouldBindJSON(&json); err != nil {
-		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
-		return
-	}
-	err = bh.valid.Struct(json)
-	if err != nil {
 		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
 	}
