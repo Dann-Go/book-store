@@ -42,7 +42,7 @@ func (bh *BookHandler) GetAll(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 func (bh *BookHandler) GetById(ctx *gin.Context) {
-	id, err := strconv.Atoi(ctx.Request.URL.Query().Get("id"))
+	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
@@ -55,7 +55,7 @@ func (bh *BookHandler) GetById(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 func (bh *BookHandler) Update(ctx *gin.Context) {
-	id, err := strconv.Atoi(ctx.Request.URL.Query().Get("id"))
+	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
@@ -69,7 +69,7 @@ func (bh *BookHandler) Update(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, responses.NewServerGoodResponse("Books was updated"))
 }
 func (bh *BookHandler) Delete(ctx *gin.Context) {
-	id, err := strconv.Atoi(ctx.Request.URL.Query().Get("id"))
+	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
