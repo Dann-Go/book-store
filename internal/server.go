@@ -10,7 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/lib/pq"
-	"github.com/penglongli/gin-metrics/ginmetrics"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 	"io/ioutil"
 	"net/http"
@@ -37,15 +37,6 @@ func initLogger() {
 	logger.Out = os.Stdout
 	log.SetLevel(log.DebugLevel)
 	log.SetFormatter(&log.JSONFormatter{})
-}
-
-func initMetrics(router *gin.Engine) {
-	m := ginmetrics.GetMonitor()
-	m.SetSlowTime(10)
-	m.SetMetricPath("/metrics")
-	m.SetDuration([]float64{0.1, 0.25, 0.5, 1, 2, 5, 10})
-
-	m.Use(router)
 }
 
 func envsCheck() {
@@ -105,12 +96,22 @@ func Inject() *gin.Engine {
 		gin.SetMode(gin.ReleaseMode)
 	}
 	router := gin.New()
+	metrics := middleware.NewPrometheusMiddleware("book_store", middleware.Opts{})
+	private := router.Group("/api/books")
+	private.Use(metrics.Metrics())
+	public := router.Group("/")
+
 	router.Use(middleware.Logger())
 	router.Use(middleware.CORS())
 	bookRepo := postgres.NewPostgresqlRepository(db)
 	bookUsecase := usecase.NewBookUsecase(bookRepo)
 
-	new(delivery.BookHandler).NewBookHandler(router.RouterGroup.Group("/books"), bookUsecase)
+	new(delivery.BookHandler).NewBookHandler(private, bookUsecase)
+	public.GET("/metrics", gin.WrapH(promhttp.Handler()))
+
+	public.GET("/health", func(ctx *gin.Context) {
+		ctx.JSON(200, gin.H{"status": "alive"})
+	})
 
 	return router
 
@@ -119,7 +120,6 @@ func (s *Server) Run(port string) error {
 	initLogger()
 	envsCheck()
 	router := Inject()
-	initMetrics(router)
 	s.server = manners.NewWithServer(&http.Server{
 		Addr:           ":" + port,
 		Handler:        router,
