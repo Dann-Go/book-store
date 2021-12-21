@@ -99,6 +99,7 @@ func Inject() *gin.Engine {
 	metrics := middleware.NewPrometheusMiddleware("book_store", middleware.Opts{})
 	private := router.Group("/api/books")
 	private.Use(metrics.Metrics())
+	private.Use(middleware.Token_auth)
 	public := router.Group("/")
 
 	router.Use(middleware.Logger())

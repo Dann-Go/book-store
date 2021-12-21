@@ -15,6 +15,11 @@ type ServerGoodResponse struct {
 	Msg     string `json:"msg"`
 }
 
+type ServerUnauthorizedResponse struct {
+	Success bool   `json:"success"`
+	Msg     string `json:"msg"`
+}
+
 func NewServerInternalError(err string) *ServerInternalError {
 	return &ServerInternalError{
 		Success: false,
@@ -32,6 +37,12 @@ func NewServerBadRequestError(err string) *ServerBadRequestError {
 func NewServerGoodResponse(msg string) *ServerGoodResponse {
 	return &ServerGoodResponse{
 		Success: true,
+		Msg:     msg,
+	}
+}
+func NewServerUnauthorizedResponse(msg string) *ServerUnauthorizedResponse {
+	return &ServerUnauthorizedResponse{
+		Success: false,
 		Msg:     msg,
 	}
 }
