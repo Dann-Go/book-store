@@ -29,6 +29,7 @@ services:
     restart: on-failure
     build:
       dockerfile: Dockerfile
+      context: .
     env_file:
       - local.env
     ports:
