@@ -33,13 +33,13 @@ type PrometheusMiddleware struct {
 	queries         []string
 }
 
-//var (
-//	Books_reserved = prometheus.NewCounterVec(
-//		prometheus.CounterOpts{
-//			Name: requestReservedName,
-//			Help: "Number of reserved books",
-//		}, []string{"id", "status_code"})
-//)
+var (
+	BOOKS_RESERVED = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: requestReservedName,
+			Help: "Number of reserved books",
+		}, []string{"id"})
+)
 
 // Metrics registers new metrics and wraps it in gin.HandlerFunc
 func (p *PrometheusMiddleware) Metrics() gin.HandlerFunc {

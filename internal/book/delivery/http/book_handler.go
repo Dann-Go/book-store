@@ -3,6 +3,7 @@ package http
 import (
 	"github.com/Dann-Go/book-store/internal/domain"
 	"github.com/Dann-Go/book-store/internal/domain/responses"
+	"github.com/Dann-Go/book-store/pkg/middleware"
 	"github.com/gin-gonic/gin"
 	"net/http"
 	"strconv"
@@ -52,6 +53,7 @@ func (bh *BookHandler) GetById(ctx *gin.Context) {
 		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
 		return
 	}
+	middleware.BOOKS_RESERVED.WithLabelValues(ctx.Param("id")).Inc()
 	ctx.JSON(http.StatusOK, result)
 }
 func (bh *BookHandler) Update(ctx *gin.Context) {
