@@ -70,13 +70,26 @@ func (m mongoRepository) GetById(id int) (*domain.Book, error) {
 }
 
 func (m mongoRepository) Delete(id int) error {
-	//TODO implement me
-	panic("implement me")
+	collection := m.Client.Database("book-store").Collection("books")
+
+	filter := bson.D{{"id", id}}
+	_, err := collection.DeleteOne(context.TODO(), filter)
+	if err != nil {
+		return err
+	}
+	return err
 }
 
 func (m mongoRepository) Update(book *domain.Book, id int) error {
-	//TODO implement me
-	panic("implement me")
+	collection := m.Client.Database("book-store").Collection("books")
+	filter := bson.D{{"id", id}}
+	update := bson.D{{"$set", bson.D{{"id", book.ID}, {"authors", book.Authors},
+		{"title", book.Title}, {"year", book.Year}}}}
+	_, err := collection.UpdateOne(context.TODO(), filter, update)
+	if err != nil {
+		return err
+	}
+	return err
 }
 
 func NewMongoRepository(Client *mongo.Client) domain.BookRepository {
