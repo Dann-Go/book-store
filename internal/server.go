@@ -3,7 +3,7 @@ package internal
 import (
 	"context"
 	delivery "github.com/Dann-Go/book-store/internal/book/delivery/http"
-	"github.com/Dann-Go/book-store/internal/book/repository/mongodb"
+	"github.com/Dann-Go/book-store/internal/book/repository/elastic_search"
 	"github.com/Dann-Go/book-store/internal/book/repository/mongodb/indexes"
 	_ "github.com/Dann-Go/book-store/internal/book/repository/postgres"
 	"github.com/Dann-Go/book-store/internal/book/usecase"
@@ -11,6 +11,7 @@ import (
 	"github.com/braintree/manners"
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq"
+	"github.com/olivere/elastic/v7"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -117,6 +118,8 @@ func Inject() *gin.Engine {
 	indexes.CreateIndex(db, "book-store", "books", "authors", true)
 	indexes.CreateIndex(db, "book-store", "books", "year", true)
 	indexes.CreateIndex(db, "book-store", "books", "id", true)
+
+	client, err := elastic.NewClient(elastic.SetURL("http://localhost:9200"), elastic.SetSniff(false), elastic.SetHealthcheck(false))
 	router := gin.New()
 	metrics := middleware.NewPrometheusMiddleware("book_store", middleware.Opts{})
 	private := router.Group("/api/books")
@@ -128,7 +131,8 @@ func Inject() *gin.Engine {
 	router.Use(middleware.Logger())
 	router.Use(middleware.CORS())
 	//bookRepo := postgres.NewPostgresqlRepository(db)
-	bookRepo := mongodb.NewMongoRepository(db)
+	//bookRepo := mongodb.NewMongoRepository(db)
+	bookRepo := elastic_search.NewElasticRepository(client)
 	bookUsecase := usecase.NewBookUsecase(bookRepo)
 
 	new(delivery.BookHandler).NewBookHandler(private, bookUsecase)
