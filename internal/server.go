@@ -4,6 +4,7 @@ import (
 	"context"
 	delivery "github.com/Dann-Go/book-store/internal/book/delivery/http"
 	"github.com/Dann-Go/book-store/internal/book/repository/mongodb"
+	"github.com/Dann-Go/book-store/internal/book/repository/mongodb/indexes"
 	_ "github.com/Dann-Go/book-store/internal/book/repository/postgres"
 	"github.com/Dann-Go/book-store/internal/book/usecase"
 	"github.com/Dann-Go/book-store/pkg/middleware"
@@ -112,6 +113,10 @@ func Inject() *gin.Engine {
 		log.Error(err)
 	}
 
+	indexes.CreateIndex(db, "book-store", "books", "title", true)
+	indexes.CreateIndex(db, "book-store", "books", "authors", true)
+	indexes.CreateIndex(db, "book-store", "books", "year", true)
+	indexes.CreateIndex(db, "book-store", "books", "id", true)
 	router := gin.New()
 	metrics := middleware.NewPrometheusMiddleware("book_store", middleware.Opts{})
 	private := router.Group("/api/books")
