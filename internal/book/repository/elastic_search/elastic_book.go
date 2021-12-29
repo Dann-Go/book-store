@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"github.com/Dann-Go/book-store/internal/domain"
 	"github.com/olivere/elastic/v7"
+	log "github.com/sirupsen/logrus"
+	"strconv"
 )
 
 func NewElasticRepository(Client *elastic.Client) domain.BookRepository {
@@ -23,11 +25,27 @@ func (e elasticRepository) Add(book *domain.Book) error {
 	if err != nil {
 		return err
 	}
+
 	return err
 }
 
 func (e elasticRepository) GetAll() ([]domain.Book, error) {
-	return nil, nil
+	books := make([]domain.Book, 0)
+	query := elastic.MatchAllQuery{}
+	searchResult, err := e.Client.Search().Index("books").Query(&query).Do(context.Background())
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	res := &domain.Book{}
+	for _, hit := range searchResult.Hits.Hits {
+		err := json.Unmarshal(hit.Source, &res)
+		if err != nil {
+			return nil, err
+		}
+		books = append(books, *res)
+	}
+	return books, err
 }
 
 func (e elasticRepository) GetById(id int) (*domain.Book, error) {
@@ -55,11 +73,26 @@ func (e elasticRepository) GetById(id int) (*domain.Book, error) {
 }
 
 func (e elasticRepository) Delete(id int) error {
-	//TODO implement me
-	panic("implement me")
+	bq := elastic.NewBoolQuery()
+	bq.Must(elastic.NewTermQuery("id", id))
+
+	_, err := elastic.NewDeleteByQueryService(e.Client).Index("books").Query(bq).Do(context.Background())
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	e.Client.Flush().Index("books").Do(context.Background())
+	return err
 }
 
+// Ask about it ???
 func (e elasticRepository) Update(book *domain.Book, id int) error {
-	//TODO implement me
-	panic("implement me")
+
+	_, err := e.Client.Update().Index("books").Id(strconv.Itoa(id)).Doc(book).Do(context.Background())
+	if err != nil {
+		log.Error(err)
+		return err
+	}
+	e.Client.Flush().Index("books").Do(context.Background())
+	return err
 }
