@@ -2,9 +2,10 @@ package internal
 
 import (
 	"context"
+	_ "context"
 	delivery "github.com/Dann-Go/book-store/internal/book/delivery/http"
 	"github.com/Dann-Go/book-store/internal/book/repository/elastic_search"
-	"github.com/Dann-Go/book-store/internal/book/repository/mongodb/indexes"
+	_ "github.com/Dann-Go/book-store/internal/book/repository/mongodb/indexes"
 	_ "github.com/Dann-Go/book-store/internal/book/repository/postgres"
 	"github.com/Dann-Go/book-store/internal/book/usecase"
 	"github.com/Dann-Go/book-store/pkg/middleware"
@@ -15,8 +16,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
-	"go.mongodb.org/mongo-driver/mongo"
-	"go.mongodb.org/mongo-driver/mongo/options"
+	_ "go.mongodb.org/mongo-driver/mongo"
+	_ "go.mongodb.org/mongo-driver/mongo/options"
+	"io/ioutil"
 	"net/http"
 	"os"
 	"strings"
@@ -99,27 +101,49 @@ func Inject() *gin.Engine {
 	} else {
 		gin.SetMode(gin.ReleaseMode)
 	}
-	mongoURI := os.Getenv("MONGOURI")
+	//mongoURI := os.Getenv("MONGOURI")
 
-	db, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
-	if err != nil {
-		log.Error(err)
-	}
-	err = db.Connect(context.TODO())
-	if err != nil {
-		log.Error(err)
-	}
-	err = db.Ping(context.TODO(), nil)
-	if err != nil {
-		log.Error(err)
-	}
-
-	indexes.CreateIndex(db, "book-store", "books", "title", true)
-	indexes.CreateIndex(db, "book-store", "books", "authors", true)
-	indexes.CreateIndex(db, "book-store", "books", "year", true)
-	indexes.CreateIndex(db, "book-store", "books", "id", true)
+	//db, err := mongo.NewClient(options.Client().ApplyURI(mongoURI))
+	//if err != nil {
+	//	log.Error(err)
+	//}
+	//err = db.Connect(context.TODO())
+	//if err != nil {
+	//	log.Error(err)
+	//}
+	//err = db.Ping(context.TODO(), nil)
+	//if err != nil {
+	//	log.Error(err)
+	//}
+	//
+	//indexes.CreateIndex(db, "book-store", "books", "title", true)
+	//indexes.CreateIndex(db, "book-store", "books", "authors", true)
+	//indexes.CreateIndex(db, "book-store", "books", "year", true)
+	//indexes.CreateIndex(db, "book-store", "books", "id", true)
 
 	client, err := elastic.NewClient(elastic.SetURL("http://localhost:9200"), elastic.SetSniff(false), elastic.SetHealthcheck(false))
+	if err != nil {
+		log.Error(err)
+	}
+	mappings, err := ioutil.ReadFile("./internal/book/repository/elastic_search/config/elastic_cfg.json")
+	if err != nil {
+		log.Error(err)
+	}
+	exist, err := client.IndexExists("books").Do(context.Background())
+	if err != nil {
+		log.Error(err)
+	} else if exist {
+		log.Println("Index already exists")
+		_, err = client.DeleteIndex("books").Do(context.Background())
+	}
+	if err != nil {
+		log.Error(err)
+	}
+
+	_, err = client.CreateIndex("books").Body(string(mappings)).Do(context.Background())
+	if err != nil {
+		log.Error(err)
+	}
 	router := gin.New()
 	metrics := middleware.NewPrometheusMiddleware("book_store", middleware.Opts{})
 	private := router.Group("/api/books")

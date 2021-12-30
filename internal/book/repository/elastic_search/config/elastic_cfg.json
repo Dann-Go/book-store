@@ -1,0 +1,48 @@
+{
+  "settings": {
+    "index": {
+      "analysis": {
+        "analyzer": {
+          "latin": {
+            "tokenizer": "keyword",
+            "filter": [
+              "myLatinTransform"
+            ]
+          },
+          "cyrillic" : {
+            "tokenizer": "keyword",
+            "filter": [
+              "myCyrillicTransform"
+            ]
+          }
+        },
+        "filter": {
+          "myLatinTransform": {
+            "type": "icu_transform",
+            "id": "Any-Latin; NFD; [:Nonspacing Mark:] Remove; NFC"
+          },
+          "myCyrillicTransform": {
+            "type": "icu_transform",
+            "id": "Any-Cyrillic; NFD; [:Nonspacing Mark:] Remove; NFC"
+          }
+        },
+        "mappings": {
+          "properties": {
+            "id": {
+              "type": "text"
+            },
+            "title": {
+              "type": "text"
+            },
+            "authors": {
+              "type": "text"
+            },
+            "year": {
+              "type": "text"
+            }
+          }
+        }
+      }
+    }
+  }
+}
