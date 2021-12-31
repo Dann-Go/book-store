@@ -22,6 +22,7 @@ type Opts struct {
 const (
 	requestCountName    = "http_requests_total"
 	requestDurationName = "http_request_duration_seconds"
+	requestReservedName = "reserved_books_count"
 )
 
 // PrometheusMiddleware represents webint metrics with its service name
@@ -31,6 +32,14 @@ type PrometheusMiddleware struct {
 	requestDuration *prometheus.HistogramVec
 	queries         []string
 }
+
+var (
+	BOOKS_RESERVED = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Name: requestReservedName,
+			Help: "Number of reserved books",
+		}, []string{"id"})
+)
 
 // Metrics registers new metrics and wraps it in gin.HandlerFunc
 func (p *PrometheusMiddleware) Metrics() gin.HandlerFunc {
