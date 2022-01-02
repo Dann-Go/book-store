@@ -135,6 +135,7 @@ func Inject() *gin.Engine {
 	} else if exist {
 		log.Println("Index already exists")
 		_, err = client.DeleteIndex("books").Do(context.Background())
+
 	}
 	if err != nil {
 		log.Error(err)

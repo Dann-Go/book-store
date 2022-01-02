@@ -17,6 +17,7 @@ type BookUsecase interface {
 	Add(book *Book) error
 	GetAll() ([]Book, error)
 	GetById(id int) (*Book, error)
+	GetByTitle(title string) ([]Book, error)
 	Delete(id int) error
 	Update(book *Book, id int) error
 }
@@ -25,6 +26,7 @@ type BookRepository interface {
 	Add(book *Book) error
 	GetAll() ([]Book, error)
 	GetById(id int) (*Book, error)
+	GetByTitle(title string) ([]Book, error)
 	Delete(id int) error
 	Update(book *Book, id int) error
 }

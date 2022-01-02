@@ -6,7 +6,6 @@ import (
 	"github.com/Dann-Go/book-store/internal/domain"
 	"github.com/olivere/elastic/v7"
 	log "github.com/sirupsen/logrus"
-	"strconv"
 )
 
 func NewElasticRepository(Client *elastic.Client) domain.BookRepository {
@@ -15,6 +14,26 @@ func NewElasticRepository(Client *elastic.Client) domain.BookRepository {
 
 type elasticRepository struct {
 	Client *elastic.Client
+}
+
+func (e elasticRepository) GetByTitle(title string) ([]domain.Book, error) {
+	books := make([]domain.Book, 0)
+	query := elastic.NewMultiMatchQuery(title, "title", "title.en", "title.ru").
+		Operator("and").Fuzziness("AUTO")
+	searchResult, err := e.Client.Search().Index("books").Query(query).Do(context.Background())
+	if err != nil {
+		log.Error(err)
+		return nil, err
+	}
+	res := &domain.Book{}
+	for _, hit := range searchResult.Hits.Hits {
+		err := json.Unmarshal(hit.Source, &res)
+		if err != nil {
+			return nil, err
+		}
+		books = append(books, *res)
+	}
+	return books, err
 }
 
 func (e elasticRepository) Add(book *domain.Book) error {
@@ -87,8 +106,8 @@ func (e elasticRepository) Delete(id int) error {
 
 // Ask about it ???
 func (e elasticRepository) Update(book *domain.Book, id int) error {
-
-	_, err := e.Client.Update().Index("books").Id(strconv.Itoa(id)).Doc(book).Do(context.Background())
+	query := elastic.NewMatchQuery("id", id)
+	_, err := e.Client.UpdateByQuery().Index("books").Query(query).Script(elastic.NewScriptInline("ctx._source.title = '" + book.Title + "'")).Do(context.Background())
 	if err != nil {
 		log.Error(err)
 		return err

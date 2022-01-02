@@ -35,7 +35,13 @@ func (bh *BookHandler) Add(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, responses.NewServerGoodResponse("Books was added"))
 }
 func (bh *BookHandler) GetAll(ctx *gin.Context) {
-	result, err := bh.BUsecase.GetAll()
+	var result []domain.Book
+	var err error
+	if len(ctx.Request.URL.Query().Get("title")) > 0 {
+		result, err = bh.BUsecase.GetByTitle(ctx.Request.URL.Query().Get("title"))
+	} else {
+		result, err = bh.BUsecase.GetAll()
+	}
 	if err != nil {
 		ctx.JSON(http.StatusInternalServerError, responses.NewServerInternalError(err.Error()))
 		return
@@ -43,6 +49,7 @@ func (bh *BookHandler) GetAll(ctx *gin.Context) {
 	ctx.JSON(http.StatusOK, result)
 }
 func (bh *BookHandler) GetById(ctx *gin.Context) {
+
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
 		ctx.JSON(http.StatusBadRequest, responses.NewServerBadRequestError(err.Error()))
