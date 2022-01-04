@@ -25,6 +25,17 @@ func (bh *BookHandler) NewBookHandler(group *gin.RouterGroup, usecase domain.Boo
 	group.DELETE("/:id", bh.Delete)
 }
 
+// Add
+// @Summary      Add
+// @Description  Add new book
+// @Tags         lists
+// @Accept       json
+// @Produce      json
+// @Param        input body domain.Book  true  "Book info"
+// @Success      200  {object}  responses.ServerGoodResponse
+// @Failure      400  {object}  responses.ServerBadRequestError
+// @Failure      500  {object}  responses.ServerInternalError
+// @Router       /api/books [post]
 func (bh *BookHandler) Add(ctx *gin.Context) {
 	json := domain.Book{}
 	if err := ctx.ShouldBindJSON(&json); err != nil {
@@ -34,6 +45,17 @@ func (bh *BookHandler) Add(ctx *gin.Context) {
 	_ = bh.BUsecase.Add(&json)
 	ctx.JSON(http.StatusOK, responses.NewServerGoodResponse("Books was added"))
 }
+
+// GetAll
+// @Summary      GetAll
+// @Description  show all books
+// @Tags         lists
+// @Accept       json
+// @Produce      json
+// @Param        title   path      string  false  "Book title"
+// @Success      200  {object}  []domain.Book
+// @Failure      500  {object}  responses.ServerInternalError
+// @Router       /api/books [get]
 func (bh *BookHandler) GetAll(ctx *gin.Context) {
 	var result []domain.Book
 	var err error
@@ -48,6 +70,18 @@ func (bh *BookHandler) GetAll(ctx *gin.Context) {
 	}
 	ctx.JSON(http.StatusOK, result)
 }
+
+// GetById
+// @Summary      GetById
+// @Description  Find books by id
+// @Tags         lists
+// @Accept       json
+// @Produce      json
+// @Param        id  path      int  true  "Book Id"
+// @Success      200  {object}  domain.Book
+// @Failure      400  {object}  responses.ServerBadRequestError
+// @Failure      500  {object}  responses.ServerInternalError
+// @Router       /api/books/{id} [get]
 func (bh *BookHandler) GetById(ctx *gin.Context) {
 
 	id, err := strconv.Atoi(ctx.Param("id"))
@@ -63,6 +97,19 @@ func (bh *BookHandler) GetById(ctx *gin.Context) {
 	middleware.BOOKS_RESERVED.WithLabelValues(ctx.Param("id")).Inc()
 	ctx.JSON(http.StatusOK, result)
 }
+
+// Update
+// @Summary      Update
+// @Description  Update books by id
+// @Tags         lists
+// @Accept       json
+// @Produce      json
+// @Param        id  path      int  true  "Book Id"
+// @Param        input body domain.Book  true  "Book info"
+// @Success      200  {object}  responses.ServerGoodResponse
+// @Failure      400  {object}  responses.ServerBadRequestError
+// @Failure      500  {object}  responses.ServerInternalError
+// @Router       /api/books/{id} [put]
 func (bh *BookHandler) Update(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {
@@ -77,6 +124,18 @@ func (bh *BookHandler) Update(ctx *gin.Context) {
 	_ = bh.BUsecase.Update(&json, id)
 	ctx.JSON(http.StatusOK, responses.NewServerGoodResponse("Books was updated"))
 }
+
+// Delete
+// @Summary      Delete
+// @Description  Delete books by id
+// @Tags         lists
+// @Accept       json
+// @Produce      json
+// @Param        id  path      int  true  "Book Id"
+// @Success      200  {object}  responses.ServerGoodResponse
+// @Failure      400  {object}  responses.ServerBadRequestError
+// @Failure      500  {object}  responses.ServerInternalError
+// @Router       /api/books/{id} [delete]
 func (bh *BookHandler) Delete(ctx *gin.Context) {
 	id, err := strconv.Atoi(ctx.Param("id"))
 	if err != nil {

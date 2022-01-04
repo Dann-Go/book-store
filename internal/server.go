@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	_ "context"
+	_ "github.com/Dann-Go/book-store/docs"
 	delivery "github.com/Dann-Go/book-store/internal/book/delivery/http"
 	"github.com/Dann-Go/book-store/internal/book/repository/elastic_search"
 	_ "github.com/Dann-Go/book-store/internal/book/repository/mongodb/indexes"
@@ -16,6 +17,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
+	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
 	_ "go.mongodb.org/mongo-driver/mongo"
 	_ "go.mongodb.org/mongo-driver/mongo/options"
 	"io/ioutil"
@@ -166,7 +169,7 @@ func Inject() *gin.Engine {
 	public.GET("/health", func(ctx *gin.Context) {
 		ctx.JSON(200, gin.H{"status": "alive"})
 	})
-
+	public.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	return router
 
 }

@@ -1,0 +1,199 @@
+basePath: /
+definitions:
+  domain.Book:
+    properties:
+      authors:
+        minLength: 1
+        type: string
+      id:
+        type: integer
+      title:
+        minLength: 1
+        type: string
+      year:
+        type: string
+    required:
+    - authors
+    - title
+    - year
+    type: object
+  responses.ServerBadRequestError:
+    properties:
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+  responses.ServerGoodResponse:
+    properties:
+      msg:
+        type: string
+      success:
+        type: boolean
+    type: object
+  responses.ServerInternalError:
+    properties:
+      error:
+        type: string
+      success:
+        type: boolean
+    type: object
+host: localhost:8000
+info:
+  contact: {}
+  description: This is s simple app that is simulating a bookstore
+  title: Book-store
+  version: "1.0"
+paths:
+  /api/books:
+    get:
+      consumes:
+      - application/json
+      description: show all books
+      parameters:
+      - description: Book title
+        in: path
+        name: title
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/domain.Book'
+            type: array
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ServerInternalError'
+      summary: GetAll
+      tags:
+      - lists
+    post:
+      consumes:
+      - application/json
+      description: Add new book
+      parameters:
+      - description: Book info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Book'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ServerGoodResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ServerBadRequestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ServerInternalError'
+      summary: Add
+      tags:
+      - lists
+  /api/books/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete books by id
+      parameters:
+      - description: Book Id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ServerGoodResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ServerBadRequestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ServerInternalError'
+      summary: Delete
+      tags:
+      - lists
+    get:
+      consumes:
+      - application/json
+      description: Find books by id
+      parameters:
+      - description: Book Id
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/domain.Book'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ServerBadRequestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ServerInternalError'
+      summary: GetById
+      tags:
+      - lists
+    put:
+      consumes:
+      - application/json
+      description: Update books by id
+      parameters:
+      - description: Book Id
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Book info
+        in: body
+        name: input
+        required: true
+        schema:
+          $ref: '#/definitions/domain.Book'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/responses.ServerGoodResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/responses.ServerBadRequestError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/responses.ServerInternalError'
+      summary: Update
+      tags:
+      - lists
+securityDefinitions:
+  ApiKeyAuth:
+    in: header
+    name: Authorization
+    type: apiKey
+swagger: "2.0"
