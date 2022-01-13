@@ -13,6 +13,10 @@ type mongoRepository struct {
 	Client *mongo.Client
 }
 
+func (m mongoRepository) GetByTitle(title string) ([]domain.Book, error) {
+	return nil, nil
+}
+
 func (m mongoRepository) Add(book *domain.Book) error {
 	collection := m.Client.Database("book-store").Collection("books")
 

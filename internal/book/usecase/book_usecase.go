@@ -16,6 +16,10 @@ func NewBookUsecase(bRepo domain.BookRepository) domain.BookUsecase {
 	}
 }
 
+func (b bookUsecase) GetByTitle(title string) ([]domain.Book, error) {
+	return b.bookRepo.GetByTitle(title)
+}
+
 func (b bookUsecase) Add(book *domain.Book) error {
 	return b.bookRepo.Add(book)
 }

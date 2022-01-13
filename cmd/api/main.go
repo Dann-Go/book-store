@@ -6,6 +6,16 @@ import (
 	"os"
 )
 
+// @title           Book-store
+// @version         1.0
+// @description     This is s simple app that is simulating a bookstore
+
+// @host      localhost:8000
+// @BasePath  /
+
+// @securityDefinitions.apikey ApiKeyAuth
+// @in header
+// @name Authorization
 func main() {
 	server := new(internal.Server)
 	if err := server.Run(os.Getenv("SERVPORT")); err != nil {

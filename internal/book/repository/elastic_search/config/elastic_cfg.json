@@ -9,7 +9,7 @@
               "myLatinTransform"
             ]
           },
-          "cyrillic" : {
+          "cyrillic": {
             "tokenizer": "keyword",
             "filter": [
               "myCyrillicTransform"
@@ -25,24 +25,34 @@
             "type": "icu_transform",
             "id": "Any-Cyrillic; NFD; [:Nonspacing Mark:] Remove; NFC"
           }
-        },
+        }
+      }
+    }
+  },
         "mappings": {
           "properties": {
             "id": {
-              "type": "text"
+              "type": "long"
             },
             "title": {
-              "type": "text"
+              "type": "text",
+              "fields" : {
+                "en": {
+                  "type" : "text",
+                  "analyzer": "latin"
+                },
+                "ru": {
+                  "type" : "text",
+                  "analyzer": "cyrillic"
+                }
+              }
             },
             "authors": {
               "type": "text"
             },
             "year": {
-              "type": "text"
+              "type": "date"
             }
           }
         }
       }
-    }
-  }
-}

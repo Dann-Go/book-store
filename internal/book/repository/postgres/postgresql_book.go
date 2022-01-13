@@ -13,6 +13,11 @@ type postgresqlRepository struct {
 func NewPostgresqlRepository(Conn *sqlx.DB) domain.BookRepository {
 	return &postgresqlRepository{Conn}
 }
+
+func (p postgresqlRepository) GetByTitle(title string) ([]domain.Book, error) {
+	return nil, nil
+}
+
 func (p postgresqlRepository) Add(book *domain.Book) error {
 	query := `INSERT INTO books(title, authors, year) VALUES ($1, $2, $3);`
 	_, err := p.Conn.Exec(query, book.Title, book.Authors, book.Year)
